@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: nginx-lb
+  name: nginx-lb
+  namespace: cluster-access
+spec:
+  selector:
+    matchLabels:
+      app: nginx-lb
+  template:
+    metadata:
+      labels:
+        app: nginx-lb
+    spec:
+      containers:
+      - image: nginx:1.17.0-alpine
+        name: nginx
+        command:
+        - ./entrypoint.sh
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        volumeMounts:
+        - mountPath: /nginx.tmpl
+          name: nginx-lb-conf
+          subPath: nginx.tmpl
+        - mountPath: /entrypoint.sh
+          name: nginx-lb-conf
+          subPath: entrypoint.sh
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+      volumes:
+      - configMap:
+          name: nginx-lb-conf
+          items:
+          - key: nginx.tmpl
+            path: nginx.tmpl
+          - key: entrypoint.sh
+            path: entrypoint.sh
+            mode: 0755
+        name: nginx-lb-conf

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-lb
+  namespace: cluster-access
+spec:
+  loadBalancerIP: 192.168.221.154
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: https
+    port: 443
+    targetPort: 443
+  - name: api
+    port: 6443
+    targetPort: 6443
+  selector:
+    app: nginx-lb
+  type: LoadBalancer

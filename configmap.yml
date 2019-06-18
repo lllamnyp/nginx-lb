@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-lb-conf
+  namespace: cluster-access
+  labels:
+    app: nginx-lb
+data:
+  entrypoint.sh: |-
+    #!/bin/sh
+    envsubst < nginx.tmpl > /etc/nginx/nginx.conf
+    nginx "-g" "daemon off;"
+  nginx.tmpl: |-
+    user  nginx;
+    worker_processes  auto;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+    events {
+      worker_connections 1024;
+    }
+    stream {
+      upstream tcp_backend {
+        server ${NODE_IP}:80;
+      }
+      upstream tls_backend {
+        server ${NODE_IP}:443;
+      }
+      server {
+        listen 80;
+        proxy_pass tcp_backend;
+      }
+      server {
+        listen 443;
+        proxy_pass tls_backend;
+      }
+    }
