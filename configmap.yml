@@ -25,6 +25,9 @@ data:
       upstream tls_backend {
         server ${NODE_IP}:443;
       }
+      upstream api_backend {
+        server ${NODE_IP}:6443;
+      }
       server {
         listen 80;
         proxy_pass tcp_backend;
@@ -32,5 +35,9 @@ data:
       server {
         listen 443;
         proxy_pass tls_backend;
+      }
+      server {
+        listen 6443;
+        proxy_pass api_backend;
       }
     }
